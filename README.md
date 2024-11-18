@@ -44,16 +44,7 @@ Each root folder (`gslb-example`, `ha-example`, `ssl-example`) corresponds to a 
 - Access to Radware Cyber Controller or external environment as required
 - Radware modules installed for Ansible
 
-### Running a Playbook
-
-To execute any playbook, navigate to the relevant folder and run the following command:
-
-```bash
-ansible-playbook <playbook-name>.yaml -e @<params-file>.json
-```
-
-Replace `<playbook-name>.yaml` with the appropriate playbook name and `<params-file>.json` with the parameter file specific to your configuration.
-
 ## License
 
 This project is intended for Radware network automation. Please ensure compliance with your organization’s policies when deploying these configurations.
+Contact Radware™ sales department for licensing https://www.radware.com/contactus
