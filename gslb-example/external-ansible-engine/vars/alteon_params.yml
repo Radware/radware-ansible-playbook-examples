@@ -1,0 +1,39 @@
+
+radware_provider:
+  - server: 192.168.1.1
+    user: admin
+    password: radware
+    validate_certs: no
+    https_port: 443
+    ssh_port: 22
+    timeout: 10
+  - server: 192.168.1.2
+    user: admin
+    password: radware
+    validate_certs: no
+    https_port: 443
+    ssh_port: 22
+    timeout: 10
+
+gslb_srv:
+    fqdn: app.demo.lab
+    gslb_metric: phash
+    site_a:
+      clnt_int: 192.168.2.2
+      srvr_int: 192.168.3.2
+      vip: 192.168.2.101
+      dns_responder: 192.168.2.200
+      local_servers:
+        - address: 192.168.3.1
+          index: real31
+    site_b:
+      clnt_int: 192.168.2.3
+      srvr_int: 192.168.3.3
+      vip: 192.168.2.102
+      dns_responder: 192.168.2.201
+      local_servers:
+        - address: 192.168.3.11
+          index: real311
+
+state: present
+

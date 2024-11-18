@@ -1,0 +1,99 @@
+- name: interface 1 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 1
+      state: enabled
+      ip4_address: "{{ params.interface_1_address }}" # 192.168.3.2
+      ip4_subnet: "{{ params.interface_1_net_mask }}" # 255.255.255.0
+      ip_ver: ipv4
+      vlan: 1
+      
+- name: interface 2 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 2
+      state: enabled
+      ip4_address: "{{ params.interface_2_address }}" # 192.168.2.2
+      ip4_subnet: "{{ params.interface_2_net_mask }}" # 255.255.255.0
+      ip_ver: ipv4
+      vlan: 2
+
+- name: real1 config
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: real1
+      state: enabled
+      ip_address: "{{ params.real_1_address }}"
+
+- name: real2 config
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: real2
+      state: enabled
+      ip_address: "{{ params.real_2_address }}"
+
+- name: group config
+  radware.radware_modules.alteon_config_server_group:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    revert_on_error: true
+    parameters:
+      index: group_ssl
+      slb_metric: roundRobin
+      health_check_id: tcp
+      server_names:
+        - real1
+        - real2
+
+- name: virt config
+  radware.radware_modules.alteon_config_virtual_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: virt_ssl
+      state: enabled
+      ip_address: "{{ params.vip_address }}" # 192.168.2.100
+
+- name: service config
+  radware.radware_modules.alteon_config_virtual_service:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: virt_ssl
+      service_index: 1
+      service_port: 80
+      server_group_name: group_ssl
+      application_type: http
+      nat_mode: address
+      nat_address: "{{ params.vip_address_pip }}" # 192.168.3.100
+
+- name: TLS offload service config
+  radware.radware_modules.alteon_config_virtual_service:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: virt_ssl
+      service_index: 2
+      service_port: 443
+      server_port: 80
+      server_group_name: group_ssl
+      application_type: https
+      ssl_policy_name: Outbound_FE_SSL_Inspection
+      delayed_binding: forceproxy
+      server_cert_name: WebManagementCert
+      nat_mode: address
+      nat_address: "{{ params.vip_address_pip }}" # 192.168.3.100
+
+- name: apply configuration
+  radware.radware_modules.alteon_mng_config:
+    provider: "{{ radware_providers[0] }}"
+    command: apply
+

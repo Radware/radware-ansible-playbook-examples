@@ -1,0 +1,43 @@
+{
+    "params": {
+        "common_params": [
+            {
+                "name": "Job run mode",
+                "task_param_name": "state",
+                "choices": [
+                  "present",
+                  "absent",
+                  "read"
+                ],
+                "default": "present",
+                "description": "Defines the state in which the job should run.",
+                "required": true,
+                "type": "choices"
+            },
+            {
+                "name": "HA interface 1",
+                "task_param_name": "peer_interface_va_1",
+                "default": "192.168.3.2",
+                "description": "HA interface 1",
+                "required": true,
+                "type": "str"
+            },
+            {
+                "name": "HA interface 2",
+                "task_param_name": "peer_interface_va_2",
+                "default": "192.168.3.3",
+                "description": "HA interface 2",
+                "required": true,
+                "type": "str"
+            },
+            {
+                "name": "HA network subnet mask",
+                "task_param_name": "network_mask",
+                "default": "255.255.255.0",
+                "description": "the subnet mask for both of the HA intefaces",
+                "required": true,
+                "type": "str"
+            }
+        ]
+    }
+}

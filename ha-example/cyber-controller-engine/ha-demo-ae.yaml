@@ -1,0 +1,95 @@
+- name: active alteon interface 1 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 1
+      state: enabled
+      ip4_address: "{{ params.peer_interface_va_1 }}"
+      peer_ip: "{{ params.peer_interface_va_2 }}"
+      ip4_subnet: "{{ params.network_mask }}"
+      ip_ver: ipv4
+      vlan: 1
+
+- name: backup alteon interface 1 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 1
+      state: enabled
+      ip4_address: "{{ params.peer_interface_va_2 }}"
+      peer_ip: "{{ params.peer_interface_va_1 }}"
+      ip4_subnet: "{{ params.network_mask }}"
+      ip_ver: ipv4
+      vlan: 1
+
+- name: configure active ha
+  radware.radware_modules.alteon_config_high_availability:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      mode: switch
+      fail_back_mode: always
+      preferred_state: active
+      advertising_interfaces:
+      - 1
+      tracked_interfaces:
+      - 1
+
+- name: configure standby ha
+  radware.radware_modules.alteon_config_high_availability:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      mode: switch
+      fail_back_mode: always
+      preferred_state: standby
+      advertising_interfaces:
+      - 1
+      tracked_interfaces:
+      - 1
+
+- name: active config sync command
+  radware.radware_modules.alteon_config_ha_config_sync:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      automatic_sync: disabled
+      filter_sync: enabled
+      ip_interface_sync: enabled
+      gateway_sync: enabled
+      static_route_sync: enabled
+      certificate_sync: enabled
+      certificate_passphrase: radware
+      peer_authentication_mode: passphrase
+      authentication_passphrase: radware
+      sync_peers:
+        - state: enable
+          ip_ver: ipv4
+          ip4_address: "{{ params.peer_interface_va_2 }}"
+
+- name: backup config sync command
+  radware.radware_modules.alteon_config_ha_config_sync:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      automatic_sync: enabled
+      filter_sync: enabled
+      ip_interface_sync: enabled
+      gateway_sync: enabled
+      static_route_sync: enabled
+      certificate_sync: enabled
+      certificate_passphrase: radware
+      peer_authentication_mode: passphrase
+      authentication_passphrase: radware
+      sync_peers:
+        - state: enable
+          ip_ver: ipv4
+          ip4_address: "{{ params.peer_interface_va_1 }}"
+
+- name: apply configuration
+  radware.radware_modules.alteon_mng_config:
+    provider: "{{ item }}"
+    command: apply
+  loop: "{{ radware_providers }}"

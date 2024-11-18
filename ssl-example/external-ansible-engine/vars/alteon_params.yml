@@ -1,0 +1,34 @@
+
+radware_provider:
+  server: 192.168.1.1
+  user: admin
+  password: radware
+  validate_certs: no
+  https_port: 443
+  ssh_port: 22
+  timeout: 10
+
+services:
+ - ip: 192.168.2.100
+   nat: 192.168.3.100
+   port: 80 
+ - ip: 192.168.2.101
+   nat: 192.168.3.101
+   port: 8080
+ - ip: 192.168.2.102
+   nat: 192.168.3.102
+   port: 8081
+ - ip: 192.168.2.103
+   nat: 192.168.3.103
+   port: 8082
+ - ip: 192.168.2.104
+   nat: 192.168.3.104
+   port: 8083
+ - ip: 192.168.2.105
+   nat: 192.168.3.105
+   port: 8084
+ - ip: 192.168.2.106
+   nat: 192.168.3.106
+   port: 8085
+
+state: present

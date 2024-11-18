@@ -1,0 +1,272 @@
+- name: site A interface 1 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 1
+      state: enabled
+      ip4_address: "{{ params.gslb_a_srvr_int }}"
+      ip4_subnet: 255.255.255.0
+      ip_ver: ipv4
+      vlan: 1
+      
+- name: site A interface 2 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 2
+      state: enabled
+      ip4_address: "{{ params.gslb_a_clnt_int }}"
+      ip4_subnet: 255.255.255.0
+      ip_ver: ipv4
+      vlan: 2
+
+- name: site B interface 1 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 1
+      state: enabled
+      ip4_address: "{{ params.gslb_b_srvr_int }}"
+      ip4_subnet: 255.255.255.0
+      ip_ver: ipv4
+      vlan: 1
+      
+- name: site B interface 2 config
+  radware.radware_modules.alteon_config_l3_interface:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: 2
+      state: enabled
+      ip4_address: "{{ params.gslb_b_clnt_int }}"
+      ip4_subnet: 255.255.255.0
+      ip_ver: ipv4
+      vlan: 2
+
+- name: site A reals config
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      state: enabled
+      index: "{{ item ~ '_real' }}"
+      ip_address: "{{ item }}"
+  loop: "{{ params.reals_site_a }}"
+
+- name: site B reals config
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      state: enabled
+      index: "{{ item ~ '_real'}}"
+      ip_address: "{{ item }}"
+  loop: "{{ params.reals_site_b }}"
+
+- name: site A remote real
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      state: enabled
+      index: "other-va-vip"
+      health_check_id: "dssp"
+      server_type: "remote_server"
+      ip_address: "{{ params.site_b_vip }}"
+
+- name: site B remote real
+  radware.radware_modules.alteon_config_server:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      state: enabled
+      index: "other-va-vip"
+      health_check_id: "dssp"
+      server_type: "remote_server"
+      ip_address: "{{ params.site_a_vip }}"
+
+- name: site A group config
+  radware.radware_modules.alteon_config_server_group:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    revert_on_error: true
+    parameters:
+      index: group_gslb
+      slb_metric: roundRobin
+      health_check_id: tcp
+      server_names: "{{ (params.reals_site_a | map('regex_replace', '$', '_real') | list) + ['other-va-vip'] }}" #"{{ params.reals_site_a + ['other-va-vip'] }}"
+
+- name: site B group config
+  radware.radware_modules.alteon_config_server_group:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    revert_on_error: true
+    parameters:
+      index: group_gslb
+      slb_metric: roundRobin
+      health_check_id: tcp
+      server_names: "{{ (params.reals_site_b | map('regex_replace', '$', '_real') | list) + ['other-va-vip'] }}"  #"{{ params.reals_site_b + ['other-va-vip'] }}"
+
+- name: site A dns responder
+  radware.radware_modules.alteon_config_dns_responders:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      dns_responders:
+      - name: responder_dns_1
+        ip_ver: ipv4
+        ip4_address: "{{ params.site_a_dns_responder }}"
+        return_to_src_mac: disable
+
+- name: site B dns responder
+  radware.radware_modules.alteon_config_dns_responders:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      dns_responders:
+      - name: responder_dns_1
+        ip_ver: ipv4
+        ip4_address: "{{ params.site_b_dns_responder }}"
+        return_to_src_mac: disable
+
+- name: turn on GSLB on both sites
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/ on"
+  when: params.state == "present"
+  loop: "{{ radware_providers }}"
+
+- name: turn off GSLB on both sites
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/ off"
+  when: params.state == "absent"
+  loop: "{{ radware_providers }}"
+
+- name: config GSLB remote site site_a -> site_b
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ radware_providers[0] }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/site 1/ prima {{ params.gslb_b_clnt_int }}"
+  when: params.state == "present"
+
+- name: config GSLB remote site site_b -> site_a
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ radware_providers[1] }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/site 1/ prima {{ params.gslb_a_clnt_int }}"
+  when: params.state == "present"
+
+- name: config GSLB remote site enabled on both sites
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/site 1/ ena"
+  when: params.state == "present"
+  loop: "{{ radware_providers }}"
+
+- name: delete GSLB remote site config on both sites
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/site 1/ del"
+  when: params.state == "absent"
+  loop: "{{ radware_providers }}"
+
+- name: enable GSLB dns responder on both sites
+  radware.radware_modules.alteon_config_alteon_cli_command:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      alteon_cli_command: "/c/slb/gslb/dnsresvip DnsResp1,DnsResp2/ ena"
+  when: params.state == "present"
+  loop: "{{ radware_providers }}"
+
+- name: site A GSLB rules config
+  radware.radware_modules.alteon_config_gslb_rule:
+    provider: "{{ item }}"
+    state: present
+    parameters:
+      index: 1
+      state: enabled
+      dns_ttl: 180
+      description: gslb_rule
+      #edns_persist_mode: enabled
+      #domain_name: www.test.com
+      #max_dns_resource_records: 3
+      rule_metrics:
+        - metric: phash
+          #network_ids:
+          #  - 55
+          #  - 56
+          priority: 1
+        - metric: roundrobin
+          #network_ids:
+          #  - 57
+          #  - 58
+          priority: 8
+  loop: "{{ radware_providers }}"
+
+- name: site A virt config
+  radware.radware_modules.alteon_config_virtual_server:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: gslb_virt
+      state: enabled
+      domain_name: "{{ params.fqdn }}"
+      ip_address: "{{ params.site_a_vip }}"
+
+- name: site B virt config
+  radware.radware_modules.alteon_config_virtual_server:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: gslb_virt
+      state: enabled
+      domain_name: "{{ params.fqdn }}"
+      ip_address: "{{ params.site_b_vip }}"
+
+- name: site A service config
+  radware.radware_modules.alteon_config_virtual_service:
+    provider: "{{ radware_providers[0] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: gslb_virt
+      service_index: 1
+      service_port: 80
+      server_group_name: group_gslb
+      application_type: http
+      nat_mode: address
+      nat_address: 192.168.3.100
+
+- name: site B service config
+  radware.radware_modules.alteon_config_virtual_service:
+    provider: "{{ radware_providers[1] }}"
+    state: "{{ params.state }}"
+    parameters:
+      index: gslb_virt
+      service_index: 1
+      service_port: 80
+      server_group_name: group_gslb
+      application_type: http
+      nat_mode: address
+      nat_address: 192.168.3.100    
+
+- name: apply configuration
+  radware.radware_modules.alteon_mng_config:
+    provider: "{{ item }}"
+    command: apply
+  loop: "{{ radware_providers }}"
+

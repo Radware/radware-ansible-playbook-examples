@@ -1,0 +1,83 @@
+{
+    "params": {
+        "common_params": [
+            {
+              "name": "Job run mode",
+              "task_param_name": "state",
+              "choices": [
+                "present",
+                "absent",
+                "read"
+              ],
+              "default": "present",
+              "description": "Defines the state in which the job should run.",
+              "required": true,
+              "type": "choices"
+            },
+            {
+              "name": "interface 1 address",
+              "task_param_name": "interface_1_address",
+              "default": "192.168.3.2",
+              "description": "IP address for interface 1",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "interface 1 net mask",
+              "task_param_name": "interface_1_net_mask",
+              "default": "255.255.255.0",
+              "description": "Net mask for interface 1",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "interface 2 address",
+              "task_param_name": "interface_2_address",
+              "default": "192.168.2.2",
+              "description": "IP address for interface 2",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "interface 2 net mask",
+              "task_param_name": "interface_2_net_mask",
+              "default": "255.255.255.0",
+              "description": "Net mask for interface 2",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "real 1 address",
+              "task_param_name": "real_1_address",
+              "default": "192.168.3.1",
+              "description": "IP address for real server 1",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "real 2 address",
+              "task_param_name": "real_2_address",
+              "default": "192.168.3.11",
+              "description": "IP address for real server 2",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "VIP address",
+              "task_param_name": "vip_address",
+              "default": "192.168.2.100",
+              "description": "Virtual IP address",
+              "required": true,
+              "type": "str"
+            },
+            {
+              "name": "VIP address PIP",
+              "task_param_name": "vip_address_pip",
+              "default": "192.168.3.100",
+              "description": "NAT IP address for VIP",
+              "required": true,
+              "type": "str"
+            }
+          ]          
+    }
+}

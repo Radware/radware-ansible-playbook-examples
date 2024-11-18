@@ -1,0 +1,108 @@
+{
+    "params": {
+      "common_params": [
+        {
+          "name": "Job Run Mode",
+          "task_param_name": "state",
+          "choices": [
+            "present",
+            "absent",
+            "read"
+          ],
+          "default": "present",
+          "description": "Defines the state in which the job should run.",
+          "required": true,
+          "type": "choices"
+        },
+        {
+            "name": "GSLB FQDN",
+            "task_param_name": "fqdn",
+            "default": "app.demo.lab",
+            "description": "application fqdn",
+            "required": true,
+            "type": "str"
+        },
+        {
+          "name": "Site A Server Interface Address",
+          "task_param_name": "gslb_a_srvr_int",
+          "default": "192.168.3.2",
+          "description": "IP address for Site A's server-side interface",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Site A Client Interface Address",
+          "task_param_name": "gslb_a_clnt_int",
+          "default": "192.168.2.2",
+          "description": "IP address for Site A's client-side interface",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Site A VIP",
+          "task_param_name": "site_a_vip",
+          "default": "192.168.2.101",
+          "description": "Virtual IP address for Site A",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Reals Site A",
+          "task_param_name": "reals_site_a",
+          "default": ["192.168.3.1"],
+          "description": "List of real server names for Site A",
+          "required": true,
+          "type": "list[str]"
+        },
+        {
+          "name": "Site B Server Interface Address",
+          "task_param_name": "gslb_b_srvr_int",
+          "default": "192.168.3.3",
+          "description": "IP address for Site B's server-side interface",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Site B Client Interface Address",
+          "task_param_name": "gslb_b_clnt_int",
+          "default": "192.168.2.3",
+          "description": "IP address for Site B's client-side interface",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Site B VIP",
+          "task_param_name": "site_b_vip",
+          "default": "192.168.2.102",
+          "description": "Virtual IP address for Site B",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Reals Site B",
+          "task_param_name": "reals_site_b",
+          "default": ["192.168.3.11"],
+          "description": "List of real server names for Site B",
+          "required": true,
+          "type": "list[str]"
+        },
+        {
+          "name": "Site A DNS Responder Address",
+          "task_param_name": "site_a_dns_responder",
+          "default": "192.168.2.200",
+          "description": "IP address for Site A's DNS responder",
+          "required": true,
+          "type": "str"
+        },
+        {
+          "name": "Site B DNS Responder Address",
+          "task_param_name": "site_b_dns_responder",
+          "default": "192.168.2.201",
+          "description": "IP address for Site B's DNS responder",
+          "required": true,
+          "type": "str"
+        }
+      ] 
+    }
+}
+  
